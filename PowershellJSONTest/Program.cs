@@ -1,5 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
 using PowershellJSONTest;
-using PowershellJSONTest.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,19 +7,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddTransient<IDataService, DataService>();
+builder.Services.AddSingleton<DataService>();
 
 var app = builder.Build();
 
-app.MapGet("api/DataFromCsv", (IDataService dataService) =>
+app.MapGet("api/run", ([FromQuery] string script, DataService dataService) =>
 {
-    string scriptPath = $"{Environment.CurrentDirectory}/{FileNames.ScriptFileName}";
-    dataService.CreateCsv(scriptPath);
+    if (!Path.HasExtension(script))
+        script += ".ps1";
+    
+    string scriptPath = $"{Environment.CurrentDirectory}/{script}";
+    if (!File.Exists(scriptPath))
+        throw new FileNotFoundException($"Script {script} not found");
+    
+    var output = dataService.ExecuteScript(scriptPath);
 
-    string csvPath = $"{Environment.CurrentDirectory}/{FileNames.CsvFileName}";
-    string jsonString = dataService.GetJsonFromCsv<TestPerson>(csvPath);
-
-    return jsonString;
+    return output.Select(item => item.CreateObject()).ToList();
 });
 
 // Configure the HTTP request pipeline.
