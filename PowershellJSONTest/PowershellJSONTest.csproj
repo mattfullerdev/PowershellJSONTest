@@ -14,10 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="test-csv.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="test-powershell.ps1">
+    <None Update="select-people.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
